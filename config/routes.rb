@@ -1,4 +1,5 @@
 Pushkin::Application.routes.draw do
+  get "home/hello"
   get 'parse/do'
   root 'parse#do'
   # The priority is based upon order of creation: first created -> highest priority.
