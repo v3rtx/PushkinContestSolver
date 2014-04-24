@@ -1,4 +1,4 @@
-lass CreateWorks < ActiveRecord::Migration
+class CreateWorks < ActiveRecord::Migration
   def change
     create_table :works do |t|
       t.string :url
