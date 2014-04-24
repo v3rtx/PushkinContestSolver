@@ -52,16 +52,16 @@ class ParseController < ApplicationController
   #   "id"       => 6595, # TASK_ID
   #   "level"    => 1,
   # }
-  TOKEN = Token.first.token
-  WORD = '%word%'
+  #TOKEN = Token.first.token
+  WORD = "%word%"
   def quiz    
     withWORD = false
     searchStr = params['question'].downcase!
     originalQ = searchStr
-    if (searchStr.include?(WORD)){
+    if (searchStr.include?(WORD))
       withWORD = true
       searchStr[WORD] = "%"
-    }
+    end
 
     @answer = Work.where("text LIKE ?", "%#{params['question']}%")
   end
@@ -72,17 +72,17 @@ class ParseController < ApplicationController
     withWORD = false
     searchStr = params['question'].downcase!
     originalQ = searchStr
-    if (searchStr.include?(WORD)){
+    if (searchStr.include?(WORD))
       withWORD = true
       searchStr[WORD] = "%"
-    }
+    end
 
     @answer = Work.where("text LIKE ?", "%#{params['question']}%")
     #uri = URI("http://pushkin-contest.ror.by/quiz")
     uri = URI("http://localhost:3000/quiz")
     parameters = {
       answer: @answer.first.title,
-      token: TOKEN,
+      token: Token.first.token,
       task_id:  params[:id]
     }
     Net::HTTP.post_form(uri, parameters)        
