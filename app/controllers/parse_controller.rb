@@ -1,5 +1,7 @@
 class ParseController < ApplicationController
 
+  before_filter :log
+
   require 'rubygems'
   require 'mechanize'
 
@@ -7,6 +9,10 @@ class ParseController < ApplicationController
 
   PAGE_ROOT = "http://www.rvb.ru/pushkin/"
   PAGE_URL = "http://www.rvb.ru/pushkin/04index/txtindex.htm"
+
+  def log
+    Log.create(text: "#{Time.now}: Params: #{params}")
+  end
 
   def do
   	params[:url] = PAGE_URL
