@@ -62,11 +62,11 @@ class ParseController < ApplicationController
   #   "level"    => 1,
   # }
   #TOKEN = Token.first.token
-  WORD = "%word%"
   def quiz    
     solve
   end
 
+  WORD = "%word%"
   def solve
     withWORD = false
     question = Unicode::downcase(params['question']);
@@ -78,7 +78,16 @@ class ParseController < ApplicationController
       searchStr.gsub!(/#{WORD}/, "%")
     end
 
-    @answer = Work.where("text LIKE ?", "%#{searchStr}%").first
+    Work.all.map{|w| 
+      if (w.text[/.*#{searchStr}.*/] != nil) 
+        @answer = w
+        break
+      elsif (w.text.gsub("\\n"," ")[/.*#{searchStr}.*/] != nil) 
+        @answer = w
+        @answer.text.gsub("\\n"," ")
+        break
+      end
+    }
 
     searchStr.gsub!(/%/, "\\S*")
     wordsA = @answer.text[/#{searchStr}/].split()
