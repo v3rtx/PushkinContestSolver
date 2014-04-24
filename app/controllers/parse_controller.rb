@@ -64,6 +64,10 @@ class ParseController < ApplicationController
   #TOKEN = Token.first.token
   WORD = "%word%"
   def quiz    
+    solve
+  end
+
+  def solve
     withWORD = false
     question = Unicode::downcase(params['question']);
     searchStr = question
@@ -82,7 +86,7 @@ class ParseController < ApplicationController
     uri = URI("http://pushkin-contest.ror.by/quiz")
     #uri = URI("http://localhost:3000/quiz")
     if (!withWORD)      
-      ans = @answer.first.title
+      ans = @answer.title
     else
       ans = ""
       for i in (0..wordsQ.size)
@@ -99,39 +103,9 @@ class ParseController < ApplicationController
   end
 
   def quiz2    
-    withWORD = false
-    question = Unicode::downcase(params['question']);
-    searchStr = question
-    wordsQ = searchStr.split()
-    
-    if (searchStr.include?(WORD))
-      withWORD = true
-      searchStr.gsub!(/#{WORD}/, "%")
-    end
-
-    @answer = Work.where("text LIKE ?", "%#{searchStr}%").first
-
-    searchStr.gsub!(/%/, "\\S*")
-    wordsA = @answer.text[/#{searchStr}/].split()
-
-    uri = URI("http://pushkin-contest.ror.by/quiz")
-    #uri = URI("http://localhost:3000/quiz")
-    if (!withWORD)      
-      ans = @answer.first.title
-    else
-      ans = ""
-      for i in (0..wordsQ.size)
-        if (wordsQ[i] == WORD)
-          if (ans.length > 0)
-            ans += ", #{wordsA[i]}" 
-          else
-            ans += wordsA[i]
-          end
-        end
-      end
-    end
+    solve
     parameters = {
-      answer: ans,
+      answer: @ans,
       token: Token.first.token,
       task_id:  params[:id]
     }
