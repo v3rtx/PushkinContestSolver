@@ -72,9 +72,7 @@ class ParseController < ApplicationController
     @answer = Work.where("text LIKE ?", "%#{params['question']}%")
   end
 
-  def quiz2
-    render nothing: true
-    
+  def quiz2    
     withWORD = false
     searchStr = params['question'].downcase!
     originalQ = searchStr
@@ -84,14 +82,15 @@ class ParseController < ApplicationController
     end
 
     @answer = Work.where("text LIKE ?", "%#{params['question']}%")
-    #uri = URI("http://pushkin-contest.ror.by/quiz")
-    uri = URI("http://localhost:3000/quiz")
+    uri = URI("http://pushkin-contest.ror.by/quiz")
+    #uri = URI("http://localhost:3000/quiz")
     parameters = {
       answer: @answer.first.title,
       token: Token.first.token,
       task_id:  params[:id]
     }
     Net::HTTP.post_form(uri, parameters)        
+    render nothing: true
   end
 
   def reg
