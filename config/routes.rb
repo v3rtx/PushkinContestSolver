@@ -1,10 +1,9 @@
 Pushkin::Application.routes.draw do
   
   get 'parse/do'
-  get 'quiz' => 'parse#quiz'
-  post 'quiz' => 'parse#quiz2'
-  get 'registration' => 'parse#reg'
-  post 'registration' => 'parse#reg'
+  get 'quiz_form' => 'parse#quiz', :as => :quiz_get
+  post 'quiz' => 'parse#quiz2', :as => :quiz_post
+  post 'registration' => 'parse#reg', :as => :reg_post
 
   get "home" => 'home#hello'
   get 'logs' => 'home#logs'
