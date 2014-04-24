@@ -30,12 +30,13 @@ class ParseController < ApplicationController
 
           hyp_link = link['href']
           while ((hyp_link[0] == ".") || (hyp_link[0] == "/")) do hyp_link = hyp_link[1..hyp_link.length-1] end
+
           if (!Work.exists?(url: hyp_link))
             begin
               a.get(PAGE_ROOT+hyp_link) do |textPage|
                 text = ""
                 textPage.search('.line').each { |line| text += line.text + "\n" }
-                Work.create(url: hyp_link, title: link.text, text: text)
+                Work.create(url: hyp_link, title: link.content.gsub(/—.*/,""), text: text.downcase!)
               end
             rescue Exception => ex
               @errors << ex.to_s + "Link : #{hyp_link}. Original link: #{link['href']}."
@@ -46,7 +47,7 @@ class ParseController < ApplicationController
 	  end
 
     @titles = @texts = []
-    Work.all.map{ |w| 
+    Work.all.each{ |w| 
       @titles << w.title 
       @texts << w.text
     }
@@ -63,29 +64,72 @@ class ParseController < ApplicationController
   def quiz    
     withWORD = false
     searchStr = params['question'].downcase!
-    originalQ = searchStr
+    searchStr.gsub!(/#{WORD}/, "%")
+    
     if (searchStr.include?(WORD))
       withWORD = true
-      searchStr[WORD] = "%"
+      searchStr.gsub!(/#{WORD}/, "%")
     end
 
-    @answer = Work.where("text LIKE ?", "%#{params['question']}%")
+    @answer = Work.where("text LIKE ?", "%#{searchStr}%")
+
+    wordsQ = originalQ.split()
+    searchStr.gsub!(/%/, "\\S*")
+    wordsA = answer.text[/#{searchStr}/]
+
+    uri = URI("http://pushkin-contest.ror.by/quiz")
+    #uri = URI("http://localhost:3000/quiz")
+    if (!withWORD)      
+      ans = @answer.first.title
+    else
+      ans = ""
+      for i in (0..wordsQ.size)
+        if (wordsQ[i] == WORD)
+          if (ans.length > 0)
+            ans += ", #{wordsA[i]}" 
+          else
+            ans += wordsA[i]
+          end
+        end
+      end
+    end
+    @ans = ans
   end
 
   def quiz2    
     withWORD = false
     searchStr = params['question'].downcase!
-    originalQ = searchStr
+    searchStr.gsub!(/#{WORD}/, "%")
+
     if (searchStr.include?(WORD))
       withWORD = true
-      searchStr[WORD] = "%"
+      searchStr.gsub!(/#{WORD}/, "%")
     end
 
-    @answer = Work.where("text LIKE ?", "%#{params['question']}%")
+    @answer = Work.where("text LIKE ?", "%#{searchStr}%")
+
+    wordsQ = originalQ.split()
+    searchStr.gsub!(/%/, "\\S*")
+    wordsA = answer.text[/#{searchStr}/]
+
     uri = URI("http://pushkin-contest.ror.by/quiz")
     #uri = URI("http://localhost:3000/quiz")
+    if (!withWORD)      
+      ans = @answer.first.title
+    else
+      ans = ""
+      for i in (0..wordsQ.size)
+        if (wordsQ[i] == WORD)
+          if (ans.length > 0)
+            ans += ", #{wordsA[i]}" 
+          else
+            ans += wordsA[i]
+          end
+        end
+      end
+    end
     parameters = {
-      answer: @answer.first.title,
+      answer: ans,
       token: Token.first.token,
       task_id:  params[:id]
     }

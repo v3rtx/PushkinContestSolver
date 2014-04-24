@@ -16,7 +16,7 @@ class HomeController < ApplicationController
 
   def list
     @titles = @texts = []
-    Work.all.map{ |w| 
+    Work.all.each{ |w| 
       @titles << w.title 
       @texts << w.text
     }
