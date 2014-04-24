@@ -1,11 +1,15 @@
 Pushkin::Application.routes.draw do
-  get "home/hello"
+  
   get 'parse/do'
   get 'quiz' => 'parse#quiz'
   post 'quiz' => 'parse#quiz2'
+  get 'registration' => 'parse#reg'
   post 'registration' => 'parse#reg'
-  # => get 'registration' => 'parse#reg'
+
+  get "home" => 'home#hello'
   get 'logs' => 'home#logs'
+  get 'list' => 'home#list'
+
   root 'home#hello'
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

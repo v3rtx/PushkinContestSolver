@@ -12,4 +12,11 @@ class HomeController < ApplicationController
    #  }
    #  Net::HTTP.post_form(uri, parameters) 
   end
+
+  def list
+    Work.all.map{ |w| 
+      @titles << w.title 
+      @texts << w.text
+    }
+  end
 end

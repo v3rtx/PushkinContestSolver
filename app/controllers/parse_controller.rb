@@ -94,7 +94,9 @@ class ParseController < ApplicationController
   end
 
   def reg
+    Log.create(text: "reg start. Params: #{params}")
     Token.create(token: params[:token])
     render json: {answer: 'мглою'}
+    Log.create(text: "reg end")
   end
 end
