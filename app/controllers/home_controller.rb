@@ -1,4 +1,5 @@
 class HomeController < ApplicationController
+  before_filter :log
   def hello
 
   end
@@ -14,9 +15,14 @@ class HomeController < ApplicationController
   end
 
   def list
+    @titles = @texts = []
     Work.all.map{ |w| 
       @titles << w.title 
       @texts << w.text
     }
+  end
+
+  def log
+    Log.create(text: "#{Time.now}: Params: #{params}")
   end
 end
