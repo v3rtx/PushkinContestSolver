@@ -1,4 +1,6 @@
 <h1>Logs:</h1>
-<% for log in @logs %>
-	<p><%= log.text %></p>
+<% if (@logs != nil) %>
+	<% for log in @logs %>
+		<p><%= log.text %></p>
+	<% end %>
 <% end %>
