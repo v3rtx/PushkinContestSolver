@@ -4,6 +4,7 @@ class ParseController < ApplicationController
 
   require 'rubygems'
   require 'mechanize'
+  require 'unicode'
 
   attr_accessor :titles, :texts, :errors
 
@@ -36,7 +37,7 @@ class ParseController < ApplicationController
               a.get(PAGE_ROOT+hyp_link) do |textPage|
                 text = ""
                 textPage.search('.line').each { |line| text += line.text + "\n" }
-                Work.create(url: hyp_link, title: link.content.gsub(/—.*/,""), text: text.downcase!)
+                Work.create(url: hyp_link, title: link.content.gsub(/—.*/,""), text: Unicode::downcase(text))
               end
             rescue Exception => ex
               @errors << ex.to_s + "Link : #{hyp_link}. Original link: #{link['href']}."
@@ -46,7 +47,8 @@ class ParseController < ApplicationController
   	  end
 	  end
 
-    @titles = @texts = []
+    @titles = []
+    @texts = []
     Work.all.each{ |w| 
       @titles << w.title 
       @texts << w.text

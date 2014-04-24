@@ -15,7 +15,8 @@ class HomeController < ApplicationController
   end
 
   def list
-    @titles = @texts = []
+    @titles = []
+    @texts = []
     Work.all.each{ |w| 
       @titles << w.title 
       @texts << w.text
