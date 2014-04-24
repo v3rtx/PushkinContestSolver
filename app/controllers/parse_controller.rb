@@ -65,19 +65,19 @@ class ParseController < ApplicationController
   WORD = "%word%"
   def quiz    
     withWORD = false
-    searchStr = params['question'].downcase!
-    searchStr.gsub!(/#{WORD}/, "%")
+    question = Unicode::downcase(params['question']);
+    searchStr = question
+    wordsQ = searchStr.split()
     
     if (searchStr.include?(WORD))
       withWORD = true
       searchStr.gsub!(/#{WORD}/, "%")
     end
 
-    @answer = Work.where("text LIKE ?", "%#{searchStr}%")
+    @answer = Work.where("text LIKE ?", "%#{searchStr}%").first
 
-    wordsQ = originalQ.split()
     searchStr.gsub!(/%/, "\\S*")
-    wordsA = answer.text[/#{searchStr}/]
+    wordsA = @answer.text[/#{searchStr}/].split()
 
     uri = URI("http://pushkin-contest.ror.by/quiz")
     #uri = URI("http://localhost:3000/quiz")
@@ -100,19 +100,19 @@ class ParseController < ApplicationController
 
   def quiz2    
     withWORD = false
-    searchStr = params['question'].downcase!
-    searchStr.gsub!(/#{WORD}/, "%")
-
+    question = Unicode::downcase(params['question']);
+    searchStr = question
+    wordsQ = searchStr.split()
+    
     if (searchStr.include?(WORD))
       withWORD = true
       searchStr.gsub!(/#{WORD}/, "%")
     end
 
-    @answer = Work.where("text LIKE ?", "%#{searchStr}%")
+    @answer = Work.where("text LIKE ?", "%#{searchStr}%").first
 
-    wordsQ = originalQ.split()
     searchStr.gsub!(/%/, "\\S*")
-    wordsA = answer.text[/#{searchStr}/]
+    wordsA = @answer.text[/#{searchStr}/].split()
 
     uri = URI("http://pushkin-contest.ror.by/quiz")
     #uri = URI("http://localhost:3000/quiz")
