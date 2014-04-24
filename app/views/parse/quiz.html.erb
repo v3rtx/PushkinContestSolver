@@ -1,8 +1,6 @@
 <h1>Answer</h1>
-<% for item in @answer %>
-	<h2><%= item.title %></h2>
-	<p><%= item.text %></p>
-	<p><%= item.url %></p>  
-<% end %>
+<h2><%= @answer.title %></h2>
+<p><%= @answer.text %></p>
+<p><%= @answer.url %></p>  
 <h1>Serv ans:</h1>
 <%= @ans %>
