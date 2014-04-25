@@ -112,14 +112,18 @@ class ParseController < ApplicationController
   def quiz2        
     begin
       solve      
+      uri = URI("http://pushkin-contest.ror.by/quiz")
+      parameters = {
+        answer: @ans,
+        token: Token.first,
+        task_id: params[:id]
+      }
+      Net::HTTP.post_form(uri, parameters)
+      Log.create("Answer on quiz#{parameters}")
+      render nothing: true
     rescue Exception => e
       Log.create(text: e.message)
     end
-    render json: {
-      answer: @ans,
-      token: Token.first,
-      task_id: params[:id]
-    }
   end
 
   def reg
