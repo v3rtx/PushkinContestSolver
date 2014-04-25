@@ -76,39 +76,37 @@ class ParseController < ApplicationController
     
     withWORD = true if (searchStr.include?(WORD))
 
-    searchStr = ".*" + searchStr.gsub!(/#{WORD}/, ".*") + ".*"
+    searchStr = searchStr.gsub!(/#{WORD}/, ".*")
 
     Work.all.map{|w| 
-      if (w.text[/#{searchStr}/] != nil) 
+      if (w.text[/.*#{searchStr}.*/] != nil) 
         @answer = w
         break
-      elsif (w.text.gsub("\n"," ")[/#{searchStr}/] != nil) 
+      elsif (w.text.gsub("\n"," ")[/.*#{searchStr}.*/] != nil) 
         @answer = w
         @answer.text.gsub!("\n"," ")
         break
       end
     }
 
-    binding.pry
-    wordsA = @answer.text[/#{searchStr}/].split()
+    wordsA = @answer.text.scan(/.*(#{searchStr}).*/)[0][0].split()
 
     uri = URI("http://pushkin-contest.ror.by/quiz")
     #uri = URI("http://localhost:3000/quiz")
     if (!withWORD)      
-      ans = @answer.title
+      @ans = @answer.title
     else
-      ans = ""
+      @ans = ""
       for i in (0..wordsQ.size)
         if (wordsQ[i] == WORD)
-          if (ans.length > 0)
-            ans += ", #{wordsA[i]}" 
+          if (@ans.length > 0)
+            @ans += ", #{wordsA[i]}" 
           else
-            ans += wordsA[i]
+            @ans += wordsA[i]
           end
         end
       end
     end
-    @ans = ans
   end
 
   def quiz2    
@@ -123,10 +121,12 @@ class ParseController < ApplicationController
   end
 
   def reg
-    Log.create(text: "reg start. Params: #{params}")
     Token.create(token: params[:token])
-    solve
-    render json: {answer: @answer}
-    Log.create(text: "reg end")
+    begin
+      solve      
+    rescue Exception => e
+      Log.create(text: e.message)
+    end
+    render json: {answer: @ans}
   end
 end
