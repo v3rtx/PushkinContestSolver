@@ -111,7 +111,8 @@ class ParseController < ApplicationController
 
   def quiz2        
     begin
-      solve      
+      solve            
+      render nothing: true
       uri = URI("http://pushkin-contest.ror.by/quiz")
       parameters = {
         answer: @ans,
@@ -119,8 +120,7 @@ class ParseController < ApplicationController
         task_id: params[:id]
       }
       Net::HTTP.post_form(uri, parameters)
-      Log.create("Answer on quiz#{parameters}")
-      render nothing: true
+      Log.create("Answer on quiz #{parameters.}")
     rescue Exception => e
       Log.create(text: e.message)
     end
