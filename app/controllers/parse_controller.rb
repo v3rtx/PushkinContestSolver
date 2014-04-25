@@ -73,23 +73,23 @@ class ParseController < ApplicationController
     searchStr = question
     wordsQ = searchStr.split()
     
-    if (searchStr.include?(WORD))
-      withWORD = true
-      searchStr.gsub!(/#{WORD}/, "%")
-    end
+    
+    withWORD = true if (searchStr.include?(WORD))
+
+    searchStr = ".*" + searchStr.gsub!(/#{WORD}/, ".*") + ".*"
 
     Work.all.map{|w| 
-      if (w.text[/.*#{searchStr}.*/] != nil) 
+      if (w.text[/#{searchStr}/] != nil) 
         @answer = w
         break
-      elsif (w.text.gsub("\\n"," ")[/.*#{searchStr}.*/] != nil) 
+      elsif (w.text.gsub("\n"," ")[/#{searchStr}/] != nil) 
         @answer = w
-        @answer.text.gsub("\\n"," ")
+        @answer.text.gsub!("\n"," ")
         break
       end
     }
 
-    searchStr.gsub!(/%/, "\\S*")
+    binding.pry
     wordsA = @answer.text[/#{searchStr}/].split()
 
     uri = URI("http://pushkin-contest.ror.by/quiz")
