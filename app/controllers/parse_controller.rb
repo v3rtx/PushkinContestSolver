@@ -115,7 +115,11 @@ class ParseController < ApplicationController
     rescue Exception => e
       Log.create(text: e.message)
     end
-    render json: {answer: @ans}
+    render json: {
+      answer: @ans,
+      token: Token.first,
+      task_id: params[:id]
+    }
   end
 
   def reg
