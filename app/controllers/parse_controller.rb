@@ -109,15 +109,13 @@ class ParseController < ApplicationController
     end
   end
 
-  def quiz2    
-    solve
-    parameters = {
-      answer: @ans,
-      token: Token.first.token,
-      task_id:  params[:id]
-    }
-    Net::HTTP.post_form(uri, parameters)        
-    render nothing: true
+  def quiz2        
+    begin
+      solve      
+    rescue Exception => e
+      Log.create(text: e.message)
+    end
+    render json: {answer: @ans}
   end
 
   def reg
