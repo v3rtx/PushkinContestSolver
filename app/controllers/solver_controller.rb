@@ -45,8 +45,8 @@ class SolverController < ApplicationController
   def quiz2        
     begin
       solve            
-      #uri = URI("http://pushkin-contest.ror.by/quiz")
-      uri = URI("http://localhost:3000/quiz")
+      uri = URI("http://pushkin-contest.ror.by/quiz")
+      #uri = URI("http://localhost:3000/quiz")
       parameters = {
         "answer" => @ans,
         "token" => Token.first.token,
