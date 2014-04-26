@@ -29,6 +29,7 @@ class SolverController < ApplicationController
     end
     if (@ans.match(/.*«.*».*/) != nil)
       @ans = @ans.scan(/.*«(.*)».*/)
+    end
   end
 
   def solve              
