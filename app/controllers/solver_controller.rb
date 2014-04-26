@@ -62,7 +62,7 @@ class SolverController < ApplicationController
       for i in (0..wordsQ.size-1)
         if (wordsQ[i].match(/.*#{WORD}.*/) != nil)
           if (@ans.length > 0)
-            @ans += ", #{wordsA[i]}" 
+            @ans += ",#{wordsA[i]}" 
           else
             @ans += wordsA[i]
           end
