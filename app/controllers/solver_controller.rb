@@ -39,7 +39,7 @@ class SolverController < ApplicationController
     withWORD = true if (@searchStr.include?(WORD))
 
     @searchStr.gsub!("#{WORD}", "\\S+")
-    @searchStr = " " + @searchStr.strip + " "
+    @searchStr = "\\W{1}" + @searchStr + "\\W{1}"
     binding.pry
     Work.all.map{|w| 
       text = " "+w.text+" "
