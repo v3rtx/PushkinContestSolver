@@ -54,10 +54,9 @@ class SolverController < ApplicationController
         "token" => Token.first.token,
         "task_id" => params[:id]
       }
-      binding.pry
       Net::HTTP.post_form(uri, parameters)
       render nothing: true
-      Log.create(text:"Answer on quiz #{parameters} .")
+      Log.create(text:"Answer on quiz #{parameters}.")
     rescue Exception => e
       log
       Log.create(text: e.message)
