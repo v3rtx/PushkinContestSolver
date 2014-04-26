@@ -2,27 +2,53 @@ class SolverController < ApplicationController
   before_filter :log
 
   WORD = "%word%"
-  def solve
-    searchStr = Unicode::downcase(params['question'])
-    wordsQ = searchStr.split()
-        
-    withWORD = false
-    withWORD = true if (searchStr.include?(WORD))
 
-    searchStr.gsub!("#{WORD}", ".*")
+  def solveQuiz    
+    searchStrOrig = params['question']
+    wordsQOrig = searchStrOrig.split()
+    if (params[:level] == "5")
+      (0..wordsQOrig.count-1).each{ |i|
+        begin
+          wordsQ = Array.new(wordsQOrig)
+          wordsQ[i] = WORD
+          @searchStr = Unicode::downcase(wordsQ.join(" "))
+          solve
+        rescue Exception => e
+          Log.create(text: "#{Time.now}: Not found. Search string: #{@searchStr}")
+        end
+        # if we are here than seems like we got something
+        if ( @ans != nil)          
+          Log.create(text: "#{Time.now}: Found. Search string: #{@searchStr}")
+          @ans += ", #{wordsQOrig[i]}"
+          return
+        end
+      }
+    else
+      @searchStr = Unicode::downcase(searchStrOrig)
+      solve
+    end
+  end
+
+  def solve              
+    wordsQ = @searchStr.split()
+
+    withWORD = false
+    withWORD = true if (@searchStr.include?(WORD))
+
+    @searchStr.gsub!("#{WORD}", ".*")
 
     Work.all.map{|w| 
-      if (w.text[/.*#{searchStr}.*/] != nil) 
+      if (w.text[/.*#{@searchStr}.*/] != nil) 
         @answer = w
         break
-      elsif (w.text.gsub("\n"," ")[/.*#{searchStr}.*/] != nil) 
+      elsif (w.text.gsub("\n"," ")[/.*#{@searchStr}.*/] != nil) 
         @answer = w
         @answer.text.gsub!("\n"," ")
         break
       end
     }
 
-    wordsA = @answer.text.scan(/.*(#{searchStr}).*/)[0][0].split()
+    wordsA = @answer.text.scan(/.*(#{@searchStr}).*/)[0][0].split()
 
     if (!withWORD)      
       @ans = @answer.title.strip
@@ -41,12 +67,12 @@ class SolverController < ApplicationController
   end
 
   def quiz    
-    solve
+    solveQuiz
   end
 
   def quiz2        
     begin
-      solve            
+      solveQuiz            
       uri = URI("http://pushkin-contest.ror.by/quiz")
       #uri = URI("http://localhost:3000/quiz")
       parameters = {
@@ -56,10 +82,10 @@ class SolverController < ApplicationController
       }
       Net::HTTP.post_form(uri, parameters)
       render nothing: true
-      Log.create(text:"Answer on quiz #{parameters}.")
+      Log.create(text: "Answer on quiz #{parameters}.")
     rescue Exception => e
       log
-      Log.create(text: e.message)
+      Log.create(text: "#{Time.now}: #{e}")
     end
   end
 
@@ -68,7 +94,7 @@ class SolverController < ApplicationController
     begin
       solve      
     rescue Exception => e
-      Log.create(text: e.message)
+      Log.create(text: e)
     end
     render json: {answer: @ans}
   end
