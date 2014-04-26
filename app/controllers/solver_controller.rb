@@ -40,7 +40,7 @@ class SolverController < ApplicationController
 
     @searchStr.gsub!("#{WORD}", "\\S+")
     @searchStr = "\\W{1}" + @searchStr + "\\W{1}"
-    binding.pry
+    #binding.pry
     Work.all.map{|w| 
       text = " "+w.text+" "
       if (text[/.*#{@searchStr}.*/] != nil) 
@@ -53,15 +53,14 @@ class SolverController < ApplicationController
       end
     }
 
-    binding.pry
-    wordsA = (" "+@answer.text + " ").scan(/.*(#{@searchStr}).*/)[0][0].split()
+    wordsA = (" "+@answer.text + " ").scan(/.*(#{@searchStr}).*/)[0][0].split().map {|a| a[/[а-яА-Я]+/]  }
 
     if (!withWORD)      
       @ans = @answer.title.strip
     else
       @ans = ""
-      for i in (0..wordsQ.size)
-        if (wordsQ[i] == WORD)
+      for i in (0..wordsQ.size-1)
+        if (wordsQ[i].match(/.*#{WORD}.*/) != nil)
           if (@ans.length > 0)
             @ans += ", #{wordsA[i]}" 
           else
