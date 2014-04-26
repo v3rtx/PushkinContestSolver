@@ -57,8 +57,9 @@ class SolverController < ApplicationController
       binding.pry
       Net::HTTP.post_form(uri, parameters)
       render nothing: true
-      Log.create("Answer on quiz #{parameters} .")
+      Log.create(text:"Answer on quiz #{parameters} .")
     rescue Exception => e
+      log
       Log.create(text: e.message)
     end
   end
