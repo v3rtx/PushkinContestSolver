@@ -27,6 +27,8 @@ class SolverController < ApplicationController
       @searchStr = Unicode::downcase(searchStrOrig)
       solve
     end
+    if (@ans.match(/.*«.*».*/) != nil)
+      @ans = @ans.scan(/.*«(.*)».*/)
   end
 
   def solve              
@@ -82,7 +84,7 @@ class SolverController < ApplicationController
       }
       Net::HTTP.post_form(uri, parameters)
       render nothing: true
-      Log.create(text: "Answer on quiz #{parameters}.")
+      Log.create(text: "#{Time.now}: Answer on quiz #{parameters}.")
     rescue Exception => e
       log
       Log.create(text: "#{Time.now}: #{e}")
