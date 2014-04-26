@@ -91,8 +91,6 @@ class ParseController < ApplicationController
 
     wordsA = @answer.text.scan(/.*(#{searchStr}).*/)[0][0].split()
 
-    uri = URI("http://pushkin-contest.ror.by/quiz")
-    #uri = URI("http://localhost:3000/quiz")
     if (!withWORD)      
       @ans = @answer.title
     else
@@ -112,15 +110,16 @@ class ParseController < ApplicationController
   def quiz2        
     begin
       solve            
-      render nothing: true
       uri = URI("http://pushkin-contest.ror.by/quiz")
+      # => uri = URI("http://localhost:3000/quiz")
       parameters = {
-        answer: @ans,
-        token: Token.first,
-        task_id: params[:id]
+        "answer" => @ans,
+        "token" => Token.first.token,
+        "task_id" => params[:id]
       }
       Net::HTTP.post_form(uri, parameters)
-      Log.create("Answer on quiz #{parameters.}")
+      render nothing: true
+      Log.create("Answer on quiz #{parameters}.")
     rescue Exception => e
       Log.create(text: e.message)
     end
