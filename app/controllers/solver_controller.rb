@@ -1,4 +1,6 @@
 class SolverController < ApplicationController
+  before_filter :log
+
   WORD = "%word%"
   def solve
     searchStr = Unicode::downcase(params['question'])
@@ -23,7 +25,7 @@ class SolverController < ApplicationController
     wordsA = @answer.text.scan(/.*(#{searchStr}).*/)[0][0].split()
 
     if (!withWORD)      
-      @ans = @answer.title
+      @ans = @answer.title.strip
     else
       @ans = ""
       for i in (0..wordsQ.size)
@@ -52,9 +54,10 @@ class SolverController < ApplicationController
         "token" => Token.first.token,
         "task_id" => params[:id]
       }
+      binding.pry
       Net::HTTP.post_form(uri, parameters)
       render nothing: true
-      Log.create("Answer on quiz #{parameters}.")
+      Log.create("Answer on quiz #{parameters} .")
     rescue Exception => e
       Log.create(text: e.message)
     end
@@ -68,5 +71,9 @@ class SolverController < ApplicationController
       Log.create(text: e.message)
     end
     render json: {answer: @ans}
+  end
+
+  def log
+    Log.create(text: "#{Time.now}: Params: #{params}")
   end
 end
