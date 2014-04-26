@@ -38,20 +38,23 @@ class SolverController < ApplicationController
     withWORD = false
     withWORD = true if (@searchStr.include?(WORD))
 
-    @searchStr.gsub!("#{WORD}", ".*")
-
+    @searchStr.gsub!("#{WORD}", "\\S+")
+    @searchStr = " " + @searchStr.strip + " "
+    binding.pry
     Work.all.map{|w| 
-      if (w.text[/.*#{@searchStr}.*/] != nil) 
+      text = " "+w.text+" "
+      if (text[/.*#{@searchStr}.*/] != nil) 
         @answer = w
         break
-      elsif (w.text.gsub("\n"," ")[/.*#{@searchStr}.*/] != nil) 
+      elsif (text.gsub("\n"," ")[/.*#{@searchStr}.*/] != nil) 
         @answer = w
         @answer.text.gsub!("\n"," ")
         break
       end
     }
 
-    wordsA = @answer.text.scan(/.*(#{@searchStr}).*/)[0][0].split()
+    binding.pry
+    wordsA = (" "+@answer.text + " ").scan(/.*(#{@searchStr}).*/)[0][0].split()
 
     if (!withWORD)      
       @ans = @answer.title.strip
