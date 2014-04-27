@@ -20,7 +20,7 @@ class SolverController < ApplicationController
         # if we are here than seems like we got something
         if ( @ans != nil)          
           Log.create(text: "#{Time.now}: Found. Search string: #{@searchStr}")
-          @ans += ", #{wordsQOrig[i][RU_STR]}"
+          @ans += ",#{wordsQOrig[i][RU_STR]}"
           return
         end
       }
@@ -28,7 +28,7 @@ class SolverController < ApplicationController
       @searchStr = Unicode::downcase(searchStrOrig)
       solve
     end
-    
+
     if (@ans.match(/.*«.*».*/) != nil)
       @ans = @ans.scan(/.*«(.*)».*/)
     end
