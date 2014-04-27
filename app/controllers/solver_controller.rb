@@ -9,8 +9,9 @@ class SolverController < ApplicationController
     if (params[:level] == "5")
       (0..wordsQOrig.count-1).each{ |i|
         begin
-          wordsQ = Array.new(wordsQOrig)
-          wordsQ[i] = WORD
+          wordsQ = searchStrOrig.split()
+          wordsQ[i].gsub!(/\S+/, WORD)
+          binding.pry
           @searchStr = Unicode::downcase(wordsQ.join(" "))
           solve
         rescue Exception => e
@@ -53,6 +54,7 @@ class SolverController < ApplicationController
       end
     }
 
+    #binding.pry
     wordsA = (" "+@answer.text + " ").scan(/.*(#{@searchStr}).*/)[0][0].split().map {|a| a[/[а-яА-Я]+/]  }
 
     if (!withWORD)      
