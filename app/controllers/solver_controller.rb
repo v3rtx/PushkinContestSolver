@@ -2,6 +2,7 @@ class SolverController < ApplicationController
   before_filter :log
 
   WORD = "%word%"
+  RU_STR = /[а-яА-Я0-9]+/
 
   def solveQuiz    
     searchStrOrig = params['question']
@@ -11,7 +12,6 @@ class SolverController < ApplicationController
         begin
           wordsQ = searchStrOrig.split()
           wordsQ[i].gsub!(/\S+/, WORD)
-          binding.pry
           @searchStr = Unicode::downcase(wordsQ.join(" "))
           solve
         rescue Exception => e
@@ -20,7 +20,7 @@ class SolverController < ApplicationController
         # if we are here than seems like we got something
         if ( @ans != nil)          
           Log.create(text: "#{Time.now}: Found. Search string: #{@searchStr}")
-          @ans += ", #{wordsQOrig[i]}"
+          @ans += ", #{wordsQOrig[i][RU_STR]}"
           return
         end
       }
@@ -41,7 +41,6 @@ class SolverController < ApplicationController
 
     @searchStr.gsub!("#{WORD}", "\\S+")
     @searchStr = "\\W{1}" + @searchStr + "\\W{1}"
-    #binding.pry
     Work.all.map{|w| 
       text = " "+w.text+" "
       if (text[/.*#{@searchStr}.*/] != nil) 
@@ -54,8 +53,7 @@ class SolverController < ApplicationController
       end
     }
 
-    #binding.pry
-    wordsA = (" "+@answer.text + " ").scan(/.*(#{@searchStr}).*/)[0][0].split().map {|a| a[/[а-яА-Я]+/]  }
+    wordsA = (" "+@answer.text + " ").scan(/.*(#{@searchStr}).*/)[0][0].split().map {|a| a[RU_STR]  }
 
     if (!withWORD)      
       @ans = @answer.title.strip
