@@ -28,6 +28,7 @@ class SolverController < ApplicationController
       @searchStr = Unicode::downcase(searchStrOrig)
       solve
     end
+    
     if (@ans.match(/.*«.*».*/) != nil)
       @ans = @ans.scan(/.*«(.*)».*/)
     end
