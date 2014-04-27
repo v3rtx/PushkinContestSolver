@@ -7,6 +7,12 @@ class SolverController < ApplicationController
   def solveQuiz    
     searchStrOrig = params['question']
     wordsQOrig = searchStrOrig.split()
+    queryStr = "text LIKE "
+    (0..wordsQOrig.count-1).each{ |i|
+      queryStr += "'%#{wordsQOrig[i]}%'"
+      queryStr += " OR text LIKE " if (i != wordsQOrig.count-1)
+    }
+    @works = Work.where(queryStr)
     if ((params[:level] == 5) || (params[:level] == "5"))
       (0..wordsQOrig.count-1).each{ |i|
         begin
@@ -42,7 +48,7 @@ class SolverController < ApplicationController
 
     @searchStr.gsub!("#{WORD}", "\\S+")
     @searchStr = "\\W{1}" + @searchStr + "\\W{1}"
-    Work.all.map{|w| 
+    @works.map{|w| 
       text = " "+w.text+" "
       if (text[/.*#{@searchStr}.*/] != nil) 
         @answer = w
