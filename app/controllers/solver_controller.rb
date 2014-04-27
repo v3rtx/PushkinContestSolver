@@ -7,7 +7,7 @@ class SolverController < ApplicationController
   def solveQuiz    
     searchStrOrig = params['question']
     wordsQOrig = searchStrOrig.split()
-    if (params[:level] == "5")
+    if ((params[:level] == 5) || (params[:level] == "5"))
       (0..wordsQOrig.count-1).each{ |i|
         begin
           wordsQ = searchStrOrig.split()
@@ -90,8 +90,7 @@ class SolverController < ApplicationController
       render nothing: true
       Log.create(text: "#{Time.now}: Answer on quiz #{parameters}.")
     rescue Exception => e
-      log
-      Log.create(text: "#{Time.now}: #{e}")
+      Log.create(text: "#{Time.now}: #{e} #{e.backtrace}")
     end
   end
 
