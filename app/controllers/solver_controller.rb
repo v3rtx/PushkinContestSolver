@@ -1,18 +1,17 @@
 class SolverController < ApplicationController
-  before_filter :log
+  #before_filter :log
 
   WORD = "%word%"
   RU_STR = /[а-яА-Я0-9]+/
 
   def solveQuiz    
     searchStrOrig = params['question']
-    wordsQOrig = searchStrOrig.split()
+    wordsQOrig = searchStrOrig.gsub(/\s+/," ").strip.split()
     queryStr = "text LIKE "
     (0..wordsQOrig.count-1).each{ |i|
       queryStr += "'%#{wordsQOrig[i]}%'"
       queryStr += " OR text LIKE " if (i != wordsQOrig.count-1)
     }
-    @works = Work.where(queryStr)
     if ((params[:level] == 5) || (params[:level] == "5"))
       (0..wordsQOrig.count-1).each{ |i|
         begin
@@ -21,11 +20,11 @@ class SolverController < ApplicationController
           @searchStr = Unicode::downcase(wordsQ.join(" "))
           solve
         rescue Exception => e
-          Log.create(text: "#{Time.now}: Not found. Search string: #{@searchStr}")
+          #Log.create(text: "#{Time.now}: Not found. Search string: #{@searchStr}")
         end
         # if we are here than seems like we got something
         if ( @ans != nil)          
-          Log.create(text: "#{Time.now}: Found. Search string: #{@searchStr}")
+          #Log.create(text: "#{Time.now}: Found. Search string: #{@searchStr}")
           @ans += ",#{wordsQOrig[i][RU_STR]}"
           return
         end
@@ -48,7 +47,7 @@ class SolverController < ApplicationController
 
     @searchStr.gsub!("#{WORD}", "\\S+")
     @searchStr = "\\W{1}" + @searchStr + "\\W{1}"
-    @works.map{|w| 
+    ItemsProvider::ALL_WORKS.map{|w| 
       text = " "+w.text+" "
       if (text[/.*#{@searchStr}.*/] != nil) 
         @answer = w
@@ -86,7 +85,6 @@ class SolverController < ApplicationController
     begin
       solveQuiz            
       uri = URI("http://pushkin-contest.ror.by/quiz")
-      #uri = URI("http://localhost:3000/quiz")
       parameters = {
         "answer" => @ans,
         "token" => Token.first.token,
@@ -94,7 +92,7 @@ class SolverController < ApplicationController
       }
       Net::HTTP.post_form(uri, parameters)
       render nothing: true
-      Log.create(text: "#{Time.now}: Answer on quiz #{parameters}.")
+      Log.create(text: "#{Time.now}: Task: #{params}; Answer on quiz #{parameters}.")
     rescue Exception => e
       Log.create(text: "#{Time.now}: #{e} #{e.backtrace}")
     end
