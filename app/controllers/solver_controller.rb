@@ -36,22 +36,25 @@ class SolverController < ApplicationController
           begin       
             solve([work], searchStrings[i])
             # if we are here than seems like we got something
-
             if ( @ans != nil)  
               @ans += ",#{wordsQOrig[i].gsub(NON_WORD_CH, "")}"
-              return
+              break
             end  
           rescue Exception => e
           end
         }
+        if (@ans != nil)
+          break
+        end
       }
     else
       solve(Work.find(pure_ids), Unicode::downcase(searchStrOrig))
     end
-    #==========================
     if (@ans.match(/.*«.*».*/) != nil)
-      @ans = @ans.scan(/.*«(.*)».*/)
+      @ans = @ans.scan(/.*«(.*)».*/)[0][0]
     end
+    #==========================
+    
   end
 
   def solve(works, searchStr)
@@ -73,7 +76,7 @@ class SolverController < ApplicationController
         break
       end
     }
-
+    #binding.pry
     wordsA = (" "+@answer.text + " ").scan(/.*(#{searchStr}).*/)[0][0].split().map {|a| a.gsub(NON_WORD_CH, "")  }
 
     if (!withWORD)      
