@@ -4,8 +4,6 @@ class ParseController < ApplicationController
   require 'mechanize'
   require 'unicode'
 
-  attr_accessor :titles, :texts, :errors
-
   PAGE_ROOT = "http://www.rvb.ru/pushkin/"
   PAGE_URL = "http://www.rvb.ru/pushkin/04index/txtindex.htm"
 
@@ -46,6 +44,15 @@ class ParseController < ApplicationController
     Work.all.each{ |w| 
       @titles << w.title 
       @texts << w.text
+    }
+  end
+
+  def to_lines
+    ItemsProvider::ALL_WORKS.each { |w|
+      lines = w.text.split("\n")
+      lines.each{ |l| 
+        Line.create(work_id: w.id, line_text: l.gsub(/\s+/, " "))
+      }
     }
   end
 end

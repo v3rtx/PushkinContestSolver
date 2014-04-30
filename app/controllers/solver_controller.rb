@@ -2,12 +2,17 @@ class SolverController < ApplicationController
   before_filter :log
 
   WORD = "%word%"
-  RU_STR = /[а-яА-Я0-9]+/
+  NON_WORD_CH = /[:;.,?!-+=`~]+/
 
   def solveQuiz    
     searchStrOrig = params['question']
     searchStrOrig.gsub!(/\s+/, " ")
     wordsQOrig = searchStrOrig.strip.split()
+    ids = []
+    wordsQOrig.each { |w|
+      ids << ItemsProvider::REDIS.lrange(w.gsub(NON_WORD_CH, ""), 0, -1)
+    }
+    @works = Work.find(ids.flatten.uniq)
     if ((params[:level] == 5) || (params[:level] == "5"))
       (0..wordsQOrig.count-1).each{ |i|
         begin
@@ -18,10 +23,11 @@ class SolverController < ApplicationController
         rescue Exception => e
           #Log.create(text: "#{Time.now}: Not found. Search string: #{@searchStr}")
         end
+        
         # if we are here than seems like we got something
         if ( @ans != nil)          
           #Log.create(text: "#{Time.now}: Found. Search string: #{@searchStr}")
-          @ans += ",#{wordsQOrig[i][RU_STR]}"
+          @ans += ",#{wordsQOrig[i].gsub(NON_WORD_CH, "")}"
           return
         end
       }
@@ -29,7 +35,6 @@ class SolverController < ApplicationController
       @searchStr = Unicode::downcase(searchStrOrig)
       solve
     end
-
     if (@ans.match(/.*«.*».*/) != nil)
       @ans = @ans.scan(/.*«(.*)».*/)
     end
@@ -43,7 +48,7 @@ class SolverController < ApplicationController
 
     @searchStr.gsub!("#{WORD}", "\\S+")
     @searchStr = "\\W{1}" + @searchStr + "\\W{1}"
-    ItemsProvider::ALL_WORKS.map{|w| 
+    @works.map{|w| 
       text = " "+w.text+" "
       if (text[/.*#{@searchStr}.*/] != nil) 
         @answer = w
@@ -54,8 +59,7 @@ class SolverController < ApplicationController
         break
       end
     }
-
-    wordsA = (" "+@answer.text + " ").scan(/.*(#{@searchStr}).*/)[0][0].split().map {|a| a[RU_STR]  }
+    wordsA = (" "+@answer.text + " ").scan(/.*(#{@searchStr}).*/)[0][0].split().map {|a| a.gsub(NON_WORD_CH, "")  }
 
     if (!withWORD)      
       @ans = @answer.title.strip
@@ -103,6 +107,27 @@ class SolverController < ApplicationController
       Log.create(text: e)
     end
     render json: {answer: @ans}
+  end
+
+  def init
+    Line.all.each{ |l| 
+      words = l.line_text.split()
+      @errors = ""
+      words.each{ |w| 
+        pure_word = w.gsub(NON_WORD_CH,"")
+        begin
+          if (pure_word != nil)
+            ItemsProvider::REDIS.rpush(pure_word, l.work_id)
+          end
+        rescue Exception => e
+          @errors += "#{e}: #{w}\n"
+        end
+      }
+    }
+
+    ItemsProvider::ALL_WORKS.each{ |w| 
+      ItemsProvider::REDIS.set(w.id, w)
+    }
   end
 
   def log

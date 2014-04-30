@@ -11,10 +11,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140424020446) do
+ActiveRecord::Schema.define(version: 20140429091031) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "lines", force: true do |t|
+    t.integer "work_id"
+    t.string  "line_text"
+  end
+
+  add_index "lines", ["line_text"], name: "index_lines_on_line_text", using: :btree
+  add_index "lines", ["work_id"], name: "index_lines_on_work_id", using: :btree
 
   create_table "logs", force: true do |t|
     t.text     "text"
@@ -33,6 +41,8 @@ ActiveRecord::Schema.define(version: 20140424020446) do
     t.string "title"
     t.text   "text"
   end
+
+  add_index "works", ["text"], name: "index_works_on_text", using: :btree
 
   create_table "works_tables", force: true do |t|
     t.string "url"
