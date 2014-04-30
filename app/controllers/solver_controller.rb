@@ -110,6 +110,7 @@ class SolverController < ApplicationController
   end
 
   def init
+      ItemsProvider::REDIS.keys.each {|k| ItemsProvider::REDIS.del k }
       Work.all.each { |work|
       lines = work.text.split("\n")
       lines.each{ |l| 
