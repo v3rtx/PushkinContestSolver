@@ -1,3 +1,3 @@
 class ItemsProvider
-  REDIS = Redis.new
+  REDIS = {}
 end

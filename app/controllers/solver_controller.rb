@@ -10,7 +10,7 @@ class SolverController < ApplicationController
     wordsQOrig = searchStrOrig.strip.split()
     ids = []
     wordsQOrig.each { |w|
-      ids << ItemsProvider::REDIS.lrange(w.gsub(NON_WORD_CH, ""), 0, -1)
+      ids << ItemsProvider::REDIS[w.gsub(NON_WORD_CH, "")]
     }
     @works = Work.find(ids.flatten.uniq)
     if ((params[:level] == 5) || (params[:level] == "5"))
@@ -110,7 +110,6 @@ class SolverController < ApplicationController
   end
 
   def init
-      ItemsProvider::REDIS.keys.each {|k| ItemsProvider::REDIS.del k }
       Work.all.each { |work|
       lines = work.text.split("\n")
       lines.each{ |l| 
@@ -120,7 +119,10 @@ class SolverController < ApplicationController
           pure_word = w.gsub(NON_WORD_CH,"")
           begin
             if (pure_word != nil)
-              ItemsProvider::REDIS.rpush(pure_word, work.id)
+              if (ItemsProvider::REDIS[pure_word] == nil)
+                ItemsProvider::REDIS[pure_word] = []
+              end
+              ItemsProvider::REDIS[pure_word] << work.id
             end
           rescue Exception => e
             @errors += "#{e}: #{w}\n"
@@ -130,7 +132,7 @@ class SolverController < ApplicationController
     }
     
     Work.all.each{ |w| 
-      ItemsProvider::REDIS.set(w.id, w)
+      ItemsProvider::REDIS[w.id] = w
     }
   end
 
