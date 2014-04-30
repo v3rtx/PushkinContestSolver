@@ -46,13 +46,4 @@ class ParseController < ApplicationController
       @texts << w.text
     }
   end
-
-  def to_lines
-    ItemsProvider::ALL_WORKS.each { |w|
-      lines = w.text.split("\n")
-      lines.each{ |l| 
-        Line.create(work_id: w.id, line_text: l.gsub(/\s+/, " "))
-      }
-    }
-  end
 end

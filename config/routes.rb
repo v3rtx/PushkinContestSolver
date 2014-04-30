@@ -1,7 +1,6 @@
 Pushkin::Application.routes.draw do
   
   get 'parse/do'
-  get 'parse/to_lines'
   get 'solver/init'
   get 'quiz_form' => 'solver#quiz', :as => :quiz_get
   post 'quiz' => 'solver#quiz2', :as => :quiz_post

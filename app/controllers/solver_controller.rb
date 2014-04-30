@@ -23,7 +23,7 @@ class SolverController < ApplicationController
         rescue Exception => e
           #Log.create(text: "#{Time.now}: Not found. Search string: #{@searchStr}")
         end
-        
+
         # if we are here than seems like we got something
         if ( @ans != nil)          
           #Log.create(text: "#{Time.now}: Found. Search string: #{@searchStr}")
@@ -110,22 +110,25 @@ class SolverController < ApplicationController
   end
 
   def init
-    Line.all.each{ |l| 
-      words = l.line_text.split()
-      @errors = ""
-      words.each{ |w| 
-        pure_word = w.gsub(NON_WORD_CH,"")
-        begin
-          if (pure_word != nil)
-            ItemsProvider::REDIS.rpush(pure_word, l.work_id)
+      Work.all.each { |work|
+      lines = work.text.split("\n")
+      lines.each{ |l| 
+        words = l.split()
+        @errors = ""
+        words.each{ |w| 
+          pure_word = w.gsub(NON_WORD_CH,"")
+          begin
+            if (pure_word != nil)
+              ItemsProvider::REDIS.rpush(pure_word, work.id)
+            end
+          rescue Exception => e
+            @errors += "#{e}: #{w}\n"
           end
-        rescue Exception => e
-          @errors += "#{e}: #{w}\n"
-        end
+        }
       }
     }
-
-    ItemsProvider::ALL_WORKS.each{ |w| 
+    
+    Work.all.each{ |w| 
       ItemsProvider::REDIS.set(w.id, w)
     }
   end
