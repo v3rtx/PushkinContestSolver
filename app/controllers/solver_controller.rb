@@ -74,7 +74,6 @@ class SolverController < ApplicationController
       end
     }
 
-    binding.pry
     wordsA = (" "+@answer.text + " ").scan(/.*(#{searchStr}).*/)[0][0].split().map {|a| a.gsub(NON_WORD_CH, "")  }
 
     if (!withWORD)      
