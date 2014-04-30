@@ -7,59 +7,75 @@ class SolverController < ApplicationController
   def solveQuiz    
     searchStrOrig = params['question']
     searchStrOrig.gsub!(/\s+/, " ")
-    wordsQOrig = searchStrOrig.strip.split()
+    wordsQOrig = searchStrOrig.strip.split()   
     ids = []
     wordsQOrig.each { |w|
-      ids << ItemsProvider::REDIS[w.gsub(NON_WORD_CH, "")]
+      tmp = ItemsProvider::REDIS[Unicode::downcase(w.gsub(NON_WORD_CH, ""))]
+      if (tmp != nil)
+        ids << tmp.uniq
+      end
     }
-    @works = Work.find(ids.flatten.uniq)
-    if ((params[:level] == 5) || (params[:level] == "5"))
-      (0..wordsQOrig.count-1).each{ |i|
-        begin
-          wordsQ = searchStrOrig.split()
-          wordsQ[i].gsub!(/\S+/, WORD)
-          @searchStr = Unicode::downcase(wordsQ.join(" "))
-          solve
-        rescue Exception => e
-          #Log.create(text: "#{Time.now}: Not found. Search string: #{@searchStr}")
-        end
+    ids.flatten!
+    if (wordsQOrig.count > 2)
+      pure_ids = ids.group_by{|id| id}.map{|id, array| [id,array.count]}.sort_by{|id,count| count}.reverse
+      pure_ids.map!{ |id, count| id }
+    end
 
-        # if we are here than seems like we got something
-        if ( @ans != nil)          
-          #Log.create(text: "#{Time.now}: Found. Search string: #{@searchStr}")
-          @ans += ",#{wordsQOrig[i].gsub(NON_WORD_CH, "")}"
-          return
-        end
+    searchStrings = []
+    (0..wordsQOrig.count-1).each{ |i|
+      wordsQ = searchStrOrig.split()
+      wordsQ[i].gsub!(/\S+/, WORD)
+      searchStrings << Unicode::downcase(wordsQ.join(" "))
+    }  
+
+    #==========================
+    if ((params[:level] == 5) || (params[:level] == "5"))   
+      pure_ids.each{ |id|    
+        work = Work.find(id)
+        (0..searchStrings.length).each{ |i|
+          begin       
+            solve([work], searchStrings[i])
+            # if we are here than seems like we got something
+
+            if ( @ans != nil)  
+              @ans += ",#{wordsQOrig[i].gsub(NON_WORD_CH, "")}"
+              return
+            end  
+          rescue Exception => e
+          end
+        }
       }
     else
-      @searchStr = Unicode::downcase(searchStrOrig)
-      solve
+      solve(Work.find(pure_ids), Unicode::downcase(searchStrOrig))
     end
+    #==========================
     if (@ans.match(/.*«.*».*/) != nil)
       @ans = @ans.scan(/.*«(.*)».*/)
     end
   end
 
-  def solve              
-    wordsQ = @searchStr.split()
+  def solve(works, searchStr)
+    wordsQ = searchStr.split()
 
     withWORD = false
-    withWORD = true if (@searchStr.include?(WORD))
+    withWORD = true if (searchStr.include?(WORD))
 
-    @searchStr.gsub!("#{WORD}", "\\S+")
-    @searchStr = "\\W{1}" + @searchStr + "\\W{1}"
-    @works.map{|w| 
+    searchStr.gsub!("#{WORD}", "\\S+")
+    searchStr = "\\W{1}" + searchStr + "\\W{1}"
+    works.map{|w| 
       text = " "+w.text+" "
-      if (text[/.*#{@searchStr}.*/] != nil) 
+      if (text[/.*#{searchStr}.*/] != nil) 
         @answer = w
         break
-      elsif (text.gsub("\n"," ")[/.*#{@searchStr}.*/] != nil) 
+      elsif (text.gsub("\n"," ")[/.*#{searchStr}.*/] != nil) 
         @answer = w
         @answer.text.gsub!("\n"," ")
         break
       end
     }
-    wordsA = (" "+@answer.text + " ").scan(/.*(#{@searchStr}).*/)[0][0].split().map {|a| a.gsub(NON_WORD_CH, "")  }
+
+    binding.pry
+    wordsA = (" "+@answer.text + " ").scan(/.*(#{searchStr}).*/)[0][0].split().map {|a| a.gsub(NON_WORD_CH, "")  }
 
     if (!withWORD)      
       @ans = @answer.title.strip
@@ -85,7 +101,6 @@ class SolverController < ApplicationController
     begin
       solveQuiz            
       uri = URI("http://pushkin-contest.ror.by/quiz")
-      #uri = URI("http://localhost:3000/quiz")
       parameters = {
         "answer" => @ans,
         "token" => Token.first.token,
